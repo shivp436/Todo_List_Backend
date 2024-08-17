@@ -4,6 +4,10 @@ import { errorHandler } from './middleware/errorMiddleware';
 import colors from 'colors';
 import { connectDB } from './config/db';
 
+// routes
+import taskRoutes from './routes/taskRoutes';
+import userRoutes from './routes/userRoutes';
+
 dotenv.config();
 connectDB();
 
@@ -14,7 +18,8 @@ const port = process.env.NODE_ENV === 'development' ? process.env.DEV_PORT || 30
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/tasks', taskRoutes);
+app.use('/api/user', userRoutes);
 
 app.use(errorHandler);
 

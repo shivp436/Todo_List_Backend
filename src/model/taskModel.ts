@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 type TaskDocument = Document & {
+  user: mongoose.Types.ObjectId;
   name: string;
   completed: boolean;
   due: number;
@@ -13,9 +14,14 @@ type TaskDocument = Document & {
 const tagPattern = /^[a-zA-Z0-9-_]+$/;
 
 const taskSchema = new Schema<TaskDocument>({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   name: {
     type: String,
-    required: true,
+    required: [true, 'Task name is required'],
   },
   completed: {
     type: Boolean,
@@ -31,7 +37,10 @@ const taskSchema = new Schema<TaskDocument>({
     type: String,
     required: true,
     default: 'Medium',
-    enum: ['Low', 'Medium', 'High'],
+    enum: {
+      values: ['Low', 'Medium', 'High'],
+      message: 'Priority must be one of the following values: Low, Medium, High',
+    },
   },
   list: {
     type: String,
@@ -49,7 +58,7 @@ const taskSchema = new Schema<TaskDocument>({
   },
   description: {
     type: String,
-    maxlength: 500,
+    maxlength: [500, 'Description cannot exceed 500 characters'],
   },
 }, {
   timestamps: true,

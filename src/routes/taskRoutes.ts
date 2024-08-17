@@ -1,10 +1,10 @@
 import exress from 'express';
 import { getTasks, createTask, editTask, deleteTask } from '../controllers/taskControllers';
+import { protect } from '../middleware/authMiddleware';
 
 const router = exress.Router();
 
-router.route('/').get(getTasks).post(createTask);
+router.route('/').get(protect, getTasks).post(protect, createTask);
+router.route('/:id').put(protect, editTask).delete(protect, deleteTask);
 
-router.route('/:id').put(editTask).delete(deleteTask);
-
-module.exports = router;
+export default router;
