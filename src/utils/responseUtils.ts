@@ -2,15 +2,15 @@
 import { Response } from 'express';
 
 type ApiResponse = {
-  category: 'success' | 'error';
+  status: 'success' | 'error';
   code: number;
   message: string;
   data?: any;
 }
 
-const sendResponse = (res: Response, statusCode: number, category: 'success' | 'error', message: string, data?: any) => {
+const sendResponse = (res: Response, statusCode: number, status: 'success' | 'error', message: string, data?: any) => {
   const response: ApiResponse = {
-    category,
+    status,
     code: statusCode,
     message,
     data,

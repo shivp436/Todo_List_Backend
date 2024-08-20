@@ -49,7 +49,6 @@ const taskSchema = new Schema<TaskDocument>({
   },
   tags: {
     type: [String],
-    required: true,
     default: [],
     validate: {
       validator: (tags: string[]) => tags.every(tag => tagPattern.test(tag)),
