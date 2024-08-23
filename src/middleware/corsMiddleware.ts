@@ -31,7 +31,10 @@ const corsErrorHandler = (err: any, req: Request, res: Response, next: NextFunct
       403,
       'error',
       'Forbidden: Not allowed by CORS',
-      null
+      {
+        message: 'Not allowed by CORS',
+        origin: req.headers.origin,
+      }
     );
     return;
   } else {
