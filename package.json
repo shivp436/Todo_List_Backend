@@ -1,7 +1,6 @@
 {
   "name": "todo_list_backend",
   "version": "1.0.0",
-  "main": "server.ts",
   "scripts": {
     "prod": "node dist/index.js",
     "dev": "nodemon",
