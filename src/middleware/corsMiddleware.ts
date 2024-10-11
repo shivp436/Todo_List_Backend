@@ -15,7 +15,8 @@ const corsMiddleware = cors({
     origin: string | undefined,
     callback: (err: Error | null, isAllowed: boolean) => void
   ) => {
-    if (allowedOrigins.includes(origin as string)) {
+    // Allow requests with no origin (like mobile apps or curl requests, postman, etc.)
+    if (!origin || allowedOrigins.includes(origin as string)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'), false);

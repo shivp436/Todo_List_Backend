@@ -6,7 +6,7 @@ import sendResponse from '../utils/responseUtils';
 
 interface AuthenticatedRequest extends Request {
 	user?: any;
-  newToken?: string | undefined;
+	newToken?: string | undefined;
 }
 
 // @desc   Get all tasks
@@ -15,10 +15,13 @@ interface AuthenticatedRequest extends Request {
 const getTasks = asyncHandler(
 	async (req: AuthenticatedRequest, res: Response) => {
 		try {
-			const tasks = await Task.find({ user: req.user?._id });
+			// const tasks = await Task.find({ user: req.user?._id });
+			const tasks = await Task.find({ user: req.user?._id }).select(
+				'-description'
+			);
 			sendResponse(res, 200, 'success', 'Tasks retrieved successfully', {
 				_tasks: tasks,
-        _token: req.newToken,
+				_token: req.newToken,
 			});
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -55,7 +58,7 @@ const createTask = asyncHandler(
 			const createdTask = await task.save();
 			sendResponse(res, 201, 'success', 'Task created successfully', {
 				_task: createdTask,
-        _token: req.newToken,
+				_token: req.newToken,
 			});
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -106,7 +109,7 @@ const editTask = asyncHandler(
 
 			sendResponse(res, 200, 'success', 'Task updated successfully', {
 				_task: updatedTask,
-        _token: req.newToken,
+				_token: req.newToken,
 			});
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -147,10 +150,10 @@ const deleteTask = asyncHandler(
 			}
 
 			await Task.findByIdAndDelete(req.params.id);
-			sendResponse(res, 200, 'success', 'Task deleted successfully', { 
-        _task : task,
-        _token: req.newToken,
-      });
+			sendResponse(res, 200, 'success', 'Task deleted successfully', {
+				_task: task,
+				_token: req.newToken,
+			});
 		} catch (error: unknown) {
 			if (error instanceof Error) {
 				sendResponse(res, 500, 'error', 'Error deleting task', error.message);
@@ -161,4 +164,38 @@ const deleteTask = asyncHandler(
 	}
 );
 
-export { getTasks, createTask, editTask, deleteTask };
+const createInitialTasks = async (userId: string) => {
+	const dummyTasks = [
+		{
+			name: 'Task 1',
+			description: 'Complete this task',
+			due: new Date(),
+		},
+		{
+			name: 'Task 2',
+			description: 'Start this task',
+			due: new Date(),
+		},
+		{
+			name: 'Task 3',
+			description: 'Overdue task',
+			due: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+		},
+		{
+			name: 'Task 4',
+			description: 'Another task',
+			due: new Date(),
+		},
+		{
+			name: 'Task 5',
+			description: 'Final task',
+			due: new Date(),
+		},
+	];
+
+	for (const task of dummyTasks) {
+		await Task.create({ ...task, user: userId });
+	}
+};
+
+export { getTasks, createTask, editTask, deleteTask, createInitialTasks };

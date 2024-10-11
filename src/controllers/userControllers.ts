@@ -4,10 +4,11 @@ import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import sendResponse from '../utils/responseUtils';
 import { generateToken } from '../middleware/authMiddleware';
+import { createInitialTasks } from './taskControllers';
 
 interface AuthenticatedRequest extends Request {
-  user?: any;
-  newToken?: string | undefined;
+	user?: any;
+	newToken?: string | undefined;
 }
 
 // @desc    Register a new user
@@ -32,16 +33,17 @@ const registerUser = asyncHandler(
 			const salt = await bcrypt.genSalt(10);
 			const hashedPassword = await bcrypt.hash(password, salt);
 
-			const defaultDisplayName = displayName || username;
 			const user = await User.create({
 				username,
 				email,
 				password: hashedPassword,
-				defaultDisplayName,
+				displayName: displayName || username,
 				profilePicture,
 			});
 
 			if (user) {
+        createInitialTasks(user._id as string);
+
 				sendResponse(res, 201, 'success', 'User registered successfully', {
 					_user: {
 						_id: user._id,
@@ -50,7 +52,7 @@ const registerUser = asyncHandler(
 						displayName: user.displayName,
 						profilePicture: user.profilePicture,
 					},
-          _token: generateToken((user._id as string).toString()),
+					_token: generateToken((user._id as string).toString()),
 				});
 			} else {
 				sendResponse(res, 400, 'error', 'Invalid user data');
@@ -80,7 +82,7 @@ const loginUser = asyncHandler(
 			const { email, password } = req.body;
 
 			if (!email || !password) {
-				sendResponse(res, 400, 'error', 'Please provide email and password');
+				sendResponse(res, 401, 'error', 'Please provide email and password');
 				return;
 			}
 
@@ -106,7 +108,7 @@ const loginUser = asyncHandler(
 					displayName: user.displayName,
 					profilePicture: user.profilePicture,
 				},
-        _token: generateToken((user._id as string).toString()),
+				_token: generateToken((user._id as string).toString()),
 			});
 		} catch (error: unknown) {
 			if (error instanceof Error) {
@@ -121,38 +123,46 @@ const loginUser = asyncHandler(
 // @desc Get user profile
 // @route GET /api/users/me
 // @access Private
-const getMyProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-	try {
-		const user = req.user;
-		const newToken = req.newToken;
+const getMyProfile = asyncHandler(
+	async (req: AuthenticatedRequest, res: Response) => {
+		try {
+			const user = req.user;
+			const newToken = req.newToken;
 
-		if (user) {
-			sendResponse(res, 200, 'success', 'User profile retrieved successfully', {
-				_user: {
-					_id: user._id,
-					username: user.username,
-					email: user.email,
-					displayName: user.displayName,
-					profilePicture: user.profilePicture,
-				},
-        _token: newToken,
-			});
-		} else {
-			sendResponse(res, 404, 'error', 'User not found');
-		}
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			sendResponse(
-				res,
-				500,
-				'error',
-				'Error fetching user profile',
-				error.message
-			);
-		} else {
-			sendResponse(res, 500, 'error', 'Unknown error occurred');
+			if (user) {
+				sendResponse(
+					res,
+					200,
+					'success',
+					'User profile retrieved successfully',
+					{
+						_user: {
+							_id: user._id,
+							username: user.username,
+							email: user.email,
+							displayName: user.displayName,
+							profilePicture: user.profilePicture,
+						},
+						_token: newToken,
+					}
+				);
+			} else {
+				sendResponse(res, 404, 'error', 'User not found');
+			}
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				sendResponse(
+					res,
+					500,
+					'error',
+					'Error fetching user profile',
+					error.message
+				);
+			} else {
+				sendResponse(res, 500, 'error', 'Unknown error occurred');
+			}
 		}
 	}
-});
+);
 
 export { registerUser, loginUser, getMyProfile };

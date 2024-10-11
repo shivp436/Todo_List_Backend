@@ -16,7 +16,7 @@ const sendResponse = (res: Response, statusCode: number, status: 'success' | 'er
     data,
   };
   
-  res.status(statusCode).json(response);
+  res.status(200).json(response);
 };
 
 export default sendResponse;
